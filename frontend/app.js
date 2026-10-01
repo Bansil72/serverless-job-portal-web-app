@@ -21,7 +21,6 @@ const btnSpinner = document.getElementById('btnSpinner');
 const btnText = document.getElementById('btnText');
 const successModal = document.getElementById('successModal');
 const modalMessage = document.getElementById('modalMessage');
-const modalAppId = document.getElementById('modalAppId');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 
 // Theme toggle elements
@@ -302,14 +301,11 @@ function showSuccess(appId, adminNotificationSent = null) {
   if (modalMessage) {
     modalMessage.textContent = message;
   }
-  if (modalAppId) {
-    modalAppId.textContent = appId || 'N/A';
-  }
 
   if (successModal) {
     successModal.style.display = 'flex';
   } else {
-    showAlert(`${message} Ref ID: ${appId}`, adminNotificationSent === false ? 'error' : 'success');
+    showAlert(message, adminNotificationSent === false ? 'error' : 'success');
   }
 
   if (form) {
