@@ -187,6 +187,14 @@ removeFileBtn.addEventListener('click', () => {
   dropzone.style.display = 'block';
 });
 
+// Restrict Phone input to digits only (max 10 digits for Indian mobile numbers)
+const phoneInput = document.getElementById('phone');
+if (phoneInput) {
+  phoneInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+  });
+}
+
 // ==========================================================================
 // Form Submission Handler
 // ==========================================================================
@@ -203,6 +211,12 @@ form.addEventListener('submit', async (e) => {
 
   if (!role || !experience || !name || !email) {
     showAlert('Please complete all mandatory fields.', 'error');
+    return;
+  }
+
+  // Validate Indian mobile number format if provided (10 digits starting with 6-9)
+  if (phone && !/^[6-9]\d{9}$/.test(phone)) {
+    showAlert('Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).', 'error');
     return;
   }
 
@@ -248,7 +262,7 @@ form.addEventListener('submit', async (e) => {
         application_id: mockId,
         name,
         email,
-        phone: phone || '+1 (555) 019-2834',
+        phone: phone || '+91 9876543210',
         role,
         experience,
         portfolio_url: portfolio_url || 'https://github.com/developer',
