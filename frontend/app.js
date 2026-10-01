@@ -79,11 +79,17 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
 function updateEndpointDisplay() {
   if (!apiEndpointDisplay) return;
   if (apiUrl && apiUrl.trim() !== '') {
-    apiEndpointDisplay.textContent = apiUrl;
-    apiEndpointDisplay.style.color = '#0070f3';
+    try {
+      const urlObj = new URL(apiUrl);
+      const apiHost = urlObj.hostname.split('.')[0] || 'Connected';
+      apiEndpointDisplay.textContent = `API: ${apiHost}`;
+      if (changeApiBtn) changeApiBtn.title = `AWS API Gateway Endpoint: ${apiUrl}\nClick to change`;
+    } catch {
+      apiEndpointDisplay.textContent = 'API Connected';
+    }
   } else {
-    apiEndpointDisplay.textContent = 'Local Demo / Mock Mode (Active)';
-    apiEndpointDisplay.style.color = 'var(--body)';
+    apiEndpointDisplay.textContent = 'Demo Mode';
+    if (changeApiBtn) changeApiBtn.title = 'Running in Demo Mode. Click to connect AWS API Gateway';
   }
 }
 
@@ -274,25 +280,30 @@ function setLoading(isLoading) {
 }
 
 function showSuccess(appId, adminNotificationSent = null) {
-  let message = `Your application was submitted successfully. Reference ID: ${appId}`;
+  let message = 'Your application was submitted successfully.';
   if (adminNotificationSent === false) {
-    message += ' The application was saved, but the hiring team email could not be sent.';
+    message += ' Note: Application was recorded, but hiring team notification email could not be sent (check SES configuration).';
   }
 
   if (modalMessage) {
     modalMessage.textContent = message;
-  } else if (modalAppId) {
-    modalAppId.textContent = appId;
+  }
+  if (modalAppId) {
+    modalAppId.textContent = appId || 'N/A';
   }
 
   if (successModal) {
     successModal.style.display = 'flex';
   } else {
-    showAlert(message, adminNotificationSent === false ? 'error' : 'success');
+    showAlert(`${message} Ref ID: ${appId}`, adminNotificationSent === false ? 'error' : 'success');
   }
 
-  form.reset();
-  removeFileBtn.click();
+  if (form) {
+    form.reset();
+  }
+  if (removeFileBtn) {
+    removeFileBtn.click();
+  }
 }
 
 if (modalCloseBtn && successModal) {

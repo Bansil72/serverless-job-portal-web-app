@@ -6,18 +6,28 @@ import re
 from html import escape as html_escape
 from datetime import datetime
 import uuid
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from botocore.client import Config
 
 # Environment variables with sensible defaults
 TABLE_NAME = os.environ.get('TABLE_NAME', 'JobApplications')
-RESUME_BUCKET = os.environ.get('RESUME_BUCKET', 'serverless-job-resumes')
+RESUME_BUCKET = os.environ.get('RESUME_BUCKET') or os.environ.get('BUCKET_NAME') or 'job-portal-receive-resume'
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'recruiter@example.com')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', ADMIN_EMAIL)
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL') or ADMIN_EMAIL
 REGION = os.environ.get('AWS_REGION', os.environ.get('REGION', 'eu-north-1'))
 
 # Initialize AWS clients
+# Using explicit regional endpoint & SigV4 for S3 ensures presigned URLs work globally in eu-north-1 without signature mismatch
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
-s3 = boto3.client('s3', region_name=REGION)
-ses = boto3.client('sesv2', region_name=REGION)
+s3 = boto3.client(
+    's3',
+    region_name=REGION,
+    endpoint_url=f'https://s3.{REGION}.amazonaws.com',
+    config=Config(signature_version='s3v4', s3={'addressing_style': 'virtual'})
+)
+ses = boto3.client('ses', region_name=REGION)
 
 CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*',
@@ -115,6 +125,7 @@ def lambda_handler(event, context):
                     Key=resume_s3_key,
                     Body=resume_file_bytes,
                     ContentType=content_type,
+                    ContentDisposition=f'inline; filename="{download_filename}"',
                     Metadata={
                         'candidate-name': name,
                         'candidate-email': email,
@@ -123,16 +134,14 @@ def lambda_handler(event, context):
                     }
                 )
 
-                # Generate secure presigned URL valid for 7 days (604800 seconds) for recruiter review
+                # Generate secure presigned URL valid for 24 hours (86400 seconds) for recruiter review
                 resume_presigned_url = s3.generate_presigned_url(
                     'get_object',
                     Params={
                         'Bucket': RESUME_BUCKET,
-                        'Key': resume_s3_key,
-                        'ResponseContentDisposition': f'attachment; filename="{download_filename}"',
-                        'ResponseContentType': content_type,
+                        'Key': resume_s3_key
                     },
-                    ExpiresIn=604800
+                    ExpiresIn=86400
                 )
             except Exception as s3_err:
                 print(f"Error uploading file to S3: {str(s3_err)}")
@@ -188,15 +197,16 @@ def lambda_handler(event, context):
 
 
 def send_recruiter_alert(admin_email, item, resume_url, resume_file_bytes, resume_filename):
-    """Sends notification to the hiring manager with candidate info and resume download link"""
+    """Sends notification to the hiring manager with candidate info and resume attachment/download link"""
     subject = f"🎯 New Application: {item['name']} for {item['role']}"
     safe_resume_url = html_escape(resume_url, quote=True) if resume_url else None
     resume_btn = f"""
-      <p style="margin-top: 20px;">
-        <a href="{safe_resume_url}" style="background-color: #2563eb; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-          Download Resume PDF
+      <div style="margin: 22px 0; padding: 14px 18px; background-color: #0f172a; border: 1px solid #334155; border-radius: 8px;">
+        <p style="margin: 0 0 10px 0; color: #94a3b8; font-size: 13px;">📎 Candidate Resume Document:</p>
+        <a href="{safe_resume_url}" target="_blank" style="background-color: #2563eb; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; font-size: 14px;">
+          View / Download Resume PDF ({html_escape(resume_filename)})
         </a>
-      </p>
+      </div>
     """ if resume_url else "<p><em>No resume file was attached.</em></p>"
 
     html_body = f"""
@@ -237,34 +247,48 @@ def send_recruiter_alert(admin_email, item, resume_url, resume_file_bytes, resum
     </html>
     """
 
-    content = {
-        'Simple': {
+    plain_text = (
+        f"New application received from {item['name']} for {item['role']}.\n"
+        f"Application ID: {item['application_id']}\n"
+        f"Email: {item['email']}\n"
+        f"Phone: {item.get('phone') or 'N/A'}\n"
+        f"Resume Document: {resume_url or 'None provided'}\n"
+    )
+
+    # 1. If physical resume file bytes are present, attempt raw MIME email with PDF attached
+    if resume_file_bytes:
+        try:
+            msg = MIMEMultipart('mixed')
+            msg['Subject'] = subject
+            msg['From'] = SENDER_EMAIL
+            msg['To'] = admin_email
+
+            body_container = MIMEMultipart('alternative')
+            body_container.attach(MIMEText(plain_text, 'plain', 'utf-8'))
+            body_container.attach(MIMEText(html_body, 'html', 'utf-8'))
+            msg.attach(body_container)
+
+            attachment = MIMEApplication(resume_file_bytes, _subtype='pdf')
+            attachment.add_header('Content-Disposition', 'attachment', filename=resume_filename)
+            msg.attach(attachment)
+
+            return ses.send_raw_email(
+                Source=SENDER_EMAIL,
+                Destinations=[admin_email],
+                RawMessage={'Data': msg.as_bytes()}
+            )
+        except Exception as raw_err:
+            print(f"send_raw_email with attachment failed ({str(raw_err)}). Falling back to standard send_email.")
+
+    # 2. Standard SES send_email fallback (contains the direct presigned download link)
+    return ses.send_email(
+        Source=SENDER_EMAIL,
+        Destination={'ToAddresses': [admin_email]},
+        Message={
             'Subject': {'Data': subject, 'Charset': 'UTF-8'},
             'Body': {
-                'Text': {
-                    'Data': (
-                        f"New application from {item['name']} for {item['role']}. "
-                        f"Application ID: {item['application_id']}. "
-                        f"{'The resume PDF is attached.' if resume_file_bytes else 'No resume was attached.'}"
-                    ),
-                    'Charset': 'UTF-8',
-                },
-                'Html': {'Data': html_body, 'Charset': 'UTF-8'},
-            },
+                'Text': {'Data': plain_text, 'Charset': 'UTF-8'},
+                'Html': {'Data': html_body, 'Charset': 'UTF-8'}
+            }
         }
-    }
-
-    if resume_file_bytes:
-        content['Simple']['Attachments'] = [{
-            'RawContent': resume_file_bytes,
-            'FileName': resume_filename,
-            'ContentType': 'application/pdf',
-            'ContentDisposition': 'ATTACHMENT',
-            'ContentTransferEncoding': 'BASE64',
-        }]
-
-    return ses.send_email(
-        FromEmailAddress=SENDER_EMAIL,
-        Destination={'ToAddresses': [admin_email]},
-        Content=content,
     )
