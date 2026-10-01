@@ -1,0 +1,684 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Light Theme Defaults */
+  --canvas: #fafafa;
+  --canvas-elevated: #ffffff;
+  --hairline: #ebebeb;
+  --hairline-soft: #f2f2f2;
+
+  --ink: #171717;
+  --body: #4d4d4d;
+  --mute: #8f8f8f;
+  --faint: #a1a1a1;
+
+  --primary: #171717;
+  --on-primary: #ffffff;
+
+  --link: #0070f3;
+  --link-deep: #0761d1;
+  --link-soft: #d3e5ff;
+
+  --error: #ee0000;
+  --error-deep: #c50000;
+  --warning: #f5a623;
+  --warning-soft: #ffefcf;
+
+  /* Typography */
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 100px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 40px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+
+  /* Elevation */
+  --shadow-whisper: 0px 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-floating: 0px 2px 4px rgba(0, 0, 0, 0.04), 0px 12px 24px -4px rgba(0, 0, 0, 0.08);
+
+  --transition-fast: all 0.15s ease;
+}
+
+/* ==========================================================================
+   Dark Theme (Vercel Stark Black Aesthetic)
+   ========================================================================== */
+[data-theme="dark"] {
+  --canvas: #000000;
+  --canvas-elevated: #0a0a0a;
+  --hairline: #262626;
+  --hairline-soft: #171717;
+
+  --ink: #ededed;
+  --body: #a1a1a1;
+  --mute: #737373;
+  --faint: #525252;
+
+  /* Primary marketing pill turns high-contrast white in dark mode */
+  --primary: #ededed;
+  --on-primary: #000000;
+
+  --link: #0070f3;
+  --link-deep: #3291ff;
+  --link-soft: rgba(0, 112, 243, 0.15);
+
+  --error: #f87171;
+  --error-deep: #ef4444;
+  --warning: #fbbf24;
+  --warning-soft: rgba(245, 166, 35, 0.15);
+
+  --shadow-whisper: 0px 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-floating: 0px 2px 4px rgba(0, 0, 0, 0.5), 0px 16px 32px -4px rgba(0, 0, 0, 0.7);
+}
+
+/* Base Reset & Centering Setup */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--canvas);
+  background-image:
+    radial-gradient(ellipse at 18% 8%, rgba(80, 227, 194, 0.18) 0%, transparent 42%),
+    radial-gradient(ellipse at 52% 12%, rgba(0, 124, 240, 0.18) 0%, transparent 44%),
+    radial-gradient(ellipse at 84% 20%, rgba(121, 40, 202, 0.15) 0%, transparent 40%),
+    radial-gradient(ellipse at 76% 72%, rgba(255, 0, 128, 0.12) 0%, transparent 42%),
+    radial-gradient(ellipse at 20% 88%, rgba(249, 203, 40, 0.10) 0%, transparent 44%);
+  background-attachment: fixed;
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Horizontally centers all flex items on the page */
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================================================
+   Navigation Bar (Full width container with centered inner layout)
+   ========================================================================== */
+.nav-bar {
+  width: 100%;
+  background-color: var(--canvas);
+  border-bottom: 1px solid var(--hairline);
+  padding: var(--space-sm) var(--space-lg);
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.nav-inner {
+  max-width: 1040px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+}
+
+.nav-brand-triangle {
+  width: 18px;
+  height: 16px;
+  fill: var(--ink);
+  transition: fill 0.25s ease;
+}
+
+.nav-right-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.nav-badge-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--body);
+  background: var(--canvas-elevated);
+  border: 1px solid var(--hairline);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background-color: var(--canvas-elevated);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--mute);
+  background-color: var(--hairline-soft);
+}
+
+.theme-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ==========================================================================
+   Hero Section with Centered Multi-Stop Mesh Gradient
+   ========================================================================== */
+.hero-band {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  padding: 72px var(--space-lg) 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: transparent;
+  transition: background-color 0.25s ease;
+}
+
+.hero-mesh-gradient {
+  display: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Technical Eyebrow */
+.mono-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: var(--mute);
+  letter-spacing: 0.05em;
+  display: inline-block;
+  margin-bottom: var(--space-md);
+  padding: 4px 12px;
+  background: var(--canvas-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-full);
+}
+
+/* Display Headline */
+.display-xl {
+  font-family: var(--font-sans);
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 48px;
+  letter-spacing: -2.4px;
+  color: var(--ink);
+  margin-bottom: var(--space-md);
+}
+
+/* Lead Paragraph */
+.body-lg {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--body);
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Main Centered Content Container
+   ========================================================================== */
+.container-narrow {
+  max-width: 720px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: var(--space-4xl);
+  padding: 0 var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers children */
+}
+
+/* Alert Notification Banner */
+.alert-banner {
+  width: 100%;
+  padding: 12px var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 20px;
+  margin-bottom: var(--space-md);
+  text-align: center;
+  display: none;
+}
+
+.alert-banner.success {
+  background-color: var(--canvas-elevated);
+  border: 1px solid var(--link);
+  color: var(--link);
+}
+
+.alert-banner.error {
+  background-color: var(--canvas-elevated);
+  border: 1px solid var(--error);
+  color: var(--error);
+}
+
+/* ==========================================================================
+   Feature Card & Form Controls (Centered layout)
+   ========================================================================== */
+.feature-card {
+  width: 100%;
+  background-color: var(--canvas-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-whisper);
+  margin-top: 90px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.card-heading {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  margin-bottom: var(--space-xs);
+  text-align: center;
+}
+
+.card-subhead {
+  font-size: 14px;
+  color: var(--body);
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: var(--space-md);
+  text-align: center;
+}
+
+.form-section-header {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mute);
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-xs);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.form-group {
+  margin-bottom: var(--space-md);
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.required-dot {
+  color: var(--error);
+  margin-left: 2px;
+}
+
+.text-input,
+select.text-input,
+textarea.text-input {
+  width: 100%;
+  background-color: var(--canvas-elevated);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  transition: var(--transition-fast);
+}
+
+.text-input::placeholder {
+  color: var(--faint);
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--link);
+  box-shadow: 0 0 0 1px var(--link);
+}
+
+textarea.text-input {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ==========================================================================
+   Dropzone File Upload Surface
+   ========================================================================== */
+.dropzone-box {
+  background-color: var(--canvas);
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.dropzone-box:hover,
+.dropzone-box.dragover {
+  border-color: var(--ink);
+  background-color: var(--hairline-soft);
+}
+
+.dropzone-icon {
+  font-size: 20px;
+  color: var(--body);
+  margin-bottom: 6px;
+}
+
+.dropzone-primary-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.dropzone-hint-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mute);
+  margin-top: 4px;
+}
+
+.file-preview-card {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: 10px var(--space-md);
+  margin-top: var(--space-xs);
+}
+
+.file-preview-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  overflow: hidden;
+}
+
+.file-name-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 360px;
+}
+
+.file-size-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mute);
+}
+
+.file-remove-btn {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--body);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 12px;
+  transition: var(--transition-fast);
+}
+
+.file-remove-btn:hover {
+  color: var(--error);
+  border-color: var(--error);
+}
+
+/* ==========================================================================
+   Primary Marketing Pill CTA
+   ========================================================================== */
+.btn-marketing-pill {
+  width: 100%;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  height: 46px;
+  border-radius: var(--radius-pill);
+  padding: 0px 14px;
+  border: 1px solid var(--primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  transition: var(--transition-fast);
+  margin-top: var(--space-xl);
+}
+
+.btn-marketing-pill:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-marketing-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Compact Buttons */
+.btn-sm-primary {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  border: 1px solid var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.btn-sm-primary:hover {
+  opacity: 0.9;
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(125, 125, 125, 0.3);
+  border-top-color: var(--on-primary);
+  border-radius: 50%;
+  animation: geistSpin 0.7s linear infinite;
+  display: none;
+}
+
+@keyframes geistSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   Modal Dialog (Floating Level 2)
+   ========================================================================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+}
+
+.modal-sheet {
+  background-color: var(--canvas-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  max-width: 500px;
+  width: 100%;
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-floating);
+  animation: geistFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+
+@keyframes geistFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   Site Footer
+   ========================================================================== */
+.site-footer {
+  width: 100%;
+  background-color: var(--canvas);
+  border-top: 1px solid var(--hairline);
+  padding: var(--space-2xl) var(--space-lg);
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--mute);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.footer-inner {
+  max-width: 720px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.site-footer a {
+  color: var(--body);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--ink);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .display-xl {
+    font-size: 32px;
+    line-height: 36px;
+    letter-spacing: -1.28px;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    padding: var(--space-lg);
+  }
+
+  .hero-band {
+    padding: 48px var(--space-md) 28px;
+  }
+
+  .footer-inner {
+    justify-content: center;
+    text-align: center;
+  }
+}

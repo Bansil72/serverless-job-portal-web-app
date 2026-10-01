@@ -1,0 +1,44 @@
+name: Deploy Lambda Function to AWS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'lambda/**'
+      - '.github/workflows/deploy-lambda.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    name: Package and Update Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'eu-north-1' }}
+
+      - name: Package Submit Application Function
+        run: |
+          mkdir -p build/submit
+          cp lambda/submit_application.py build/submit/lambda_function.py
+          cd build/submit
+          zip -r ../../submit_application.zip .
+          cd ../..
+
+      - name: Deploy Submit Application Lambda Code
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ secrets.LAMBDA_SUBMIT_FUNCTION_NAME || 'SubmitJobApplicationFunction' }} \
+            --zip-file fileb://submit_application.zip

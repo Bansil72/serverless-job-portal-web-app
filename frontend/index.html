@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Careers — Serverless Cloud Engineering</title>
+  <meta name="description"
+    content="Apply to cloud and DevOps engineering roles through our high-performance AWS serverless recruitment portal.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 76 65%22 fill=%22%23ededed%22><path d=%22M37.5274 0L75.0548 65H0L37.5274 0Z%22/></svg>">
+  <script>
+    // Initialize Theme immediately to prevent flash
+    (function () {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- Top Navigation (Centered Inner Content) -->
+  <header class="nav-bar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <svg class="nav-brand-triangle" viewBox="0 0 76 65">
+          <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+        </svg>
+        <span>CloudScale</span>
+        <span class="nav-badge-pill">Careers</span>
+      </a>
+      <div class="nav-right-controls">
+        <!-- Dark / Light Theme Toggle -->
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle theme"
+          title="Toggle theme">
+          <!-- Sun icon (shown in dark mode) -->
+          <svg class="theme-icon" id="sunIcon" viewBox="0 0 24 24" style="display: none;">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </svg>
+          <!-- Moon icon (shown in light mode) -->
+          <svg class="theme-icon" id="moonIcon" viewBox="0 0 24 24">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Band with Vercel Multi-Stop Mesh Gradient -->
+  <section class="hero-band">
+    <div class="hero-mesh-gradient"></div>
+    <div class="hero-content">
+      <div class="mono-eyebrow">AWS SERVERLESS RECRUITMENT PIPELINE</div>
+      <h1 class="display-xl">Deploy your career at scale.</h1>
+      <p class="body-lg">
+        Submit your candidate profile and resume directly to engineering leadership. Powered by an event-driven AWS
+        Lambda, S3, and DynamoDB backend.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Centered Container -->
+  <main class="container-narrow">
+    <!-- Alert Banner -->
+    <div id="alertBox" class="alert-banner"></div>
+
+    <!-- Application Form Card (feature-card spec) -->
+    <div class="feature-card">
+      <h2 class="card-heading">Candidate Application</h2>
+      <p class="card-subhead">Fill out your profile details and attach your resume PDF for automated cloud processing.
+      </p>
+
+      <form id="applicationForm">
+        <!-- Section 1 -->
+        <div class="form-section-header">01 // Role & Seniority</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="role">Position <span class="required-dot">*</span></label>
+            <select id="role" class="text-input" required>
+              <option value="" disabled selected>Select an engineering position...</option>
+              <option value="Fresher DevOps Engineer">Fresher DevOps Engineer</option>
+              <option value="Senior DevOps Engineer">Senior DevOps Engineer</option>
+              <option value="Serverless Solutions Architect">Serverless Solutions Architect</option>
+              <option value="Cloud Security Engineer">Cloud Security Engineer</option>
+              <option value="Full-Stack Developer">Full-Stack Developer</option>
+              <option value="Site Reliability Engineer">Site Reliability Engineer (SRE)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="experience">Experience Level <span class="required-dot">*</span></label>
+            <select id="experience" class="text-input" required>
+              <option value="" disabled selected>Select experience bracket...</option>
+              <option value="0-1 Years">Fresher (0-1 year)</option>
+              <option value="1-2 Years">Junior (1-2 years)</option>
+              <option value="3-5 Years">Mid-Level (3-5 years)</option>
+              <option value="5-8 Years">Senior (5-8 years)</option>
+              <option value="8+ Years">Staff / Principal (8+ years)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="form-section-header">02 // Personal Information</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="name">Full Name <span class="required-dot">*</span></label>
+            <input type="text" id="name" class="text-input" placeholder="Guillermo Rauch" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address <span class="required-dot">*</span></label>
+            <input type="email" id="email" class="text-input" placeholder="developer@example.com" required
+              autocomplete="email">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" class="text-input" placeholder="+1 (555) 019-2834" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label for="portfolio_url">GitHub or LinkedIn URL</label>
+            <input type="url" id="portfolio_url" class="text-input" placeholder="https://github.com/username">
+          </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="form-section-header">03 // Resume Document (S3 Storage)</div>
+        <div class="form-group">
+          <label>Resume PDF <span class="required-dot">*</span></label>
+          <div class="dropzone-box" id="dropzone">
+            <div class="dropzone-icon">↑</div>
+            <div class="dropzone-primary-text">Click to upload or drag and drop your resume</div>
+            <div class="dropzone-hint-text">PDF format only · Maximum file size 5MB</div>
+            <input type="file" id="resumeFileInput" accept=".pdf,application/pdf" style="display: none;">
+          </div>
+
+          <div class="file-preview-card" id="filePreview">
+            <div class="file-preview-left">
+              <span
+                style="font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--ink);">[PDF]</span>
+              <div>
+                <div class="file-name-text" id="previewFileName">resume.pdf</div>
+                <div class="file-size-badge" id="previewFileSize">0 KB</div>
+              </div>
+            </div>
+            <button type="button" class="file-remove-btn" id="removeFileBtn">Remove</button>
+          </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="form-section-header">04 // Cover Note & Pitch</div>
+        <div class="form-group">
+          <label for="cover_letter">Brief Introduction</label>
+          <textarea id="cover_letter" class="text-input"
+            placeholder="Describe key cloud projects, architectural challenges solved, or systems you've scaled..."></textarea>
+        </div>
+
+        <!-- Marketing Pill Submit CTA (button-primary spec) -->
+        <button type="submit" class="btn-marketing-pill" id="submitBtn">
+          <span class="spinner" id="btnSpinner"></span>
+          <span id="btnText">Submit Application</span>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Level 2 Floating Modal Sheet (Success) -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-sheet">
+      <div
+        style="font-family: var(--font-mono); font-size: 11px; color: var(--link); text-transform: uppercase; margin-bottom: 8px;">
+        201 CREATED // DISPATCHED</div>
+      <h3 style="font-size: 22px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; color: var(--ink);">
+        Application Submitted</h3>
+      <p style="color: var(--body); font-size: 14px; margin-bottom: 20px; line-height: 22px;">
+        Your candidate profile and resume have been indexed in DynamoDB and stored in private S3 storage. The hiring
+        team has been notified.
+      </p>
+
+      <div
+        style="background-color: var(--canvas); border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 24px; text-align: left;">
+        <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--mute);">
+          Tracking Reference ID</div>
+        <div id="modalAppId"
+          style="font-family: var(--font-mono); font-size: 13px; color: var(--ink); margin-top: 4px; word-break: break-all;">
+          -</div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" class="btn-sm-primary" id="modalCloseBtn">Submit Another Application</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg class="nav-brand-triangle" viewBox="0 0 76 65" style="width: 14px; height: 12px;">
+          <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+        </svg>
+        <span style="font-weight: 500; color: var(--ink);">CloudScale Jobs</span>
+      </div>
+      <div>
+        <span>Built on AWS Serverless Architecture.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
