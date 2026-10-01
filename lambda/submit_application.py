@@ -3,8 +3,6 @@ import boto3
 import base64
 import os
 import re
-from email.message import EmailMessage
-from email.policy import SMTP
 from html import escape as html_escape
 from datetime import datetime
 import uuid
@@ -19,7 +17,7 @@ REGION = os.environ.get('AWS_REGION', os.environ.get('REGION', 'eu-north-1'))
 # Initialize AWS clients
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
 s3 = boto3.client('s3', region_name=REGION)
-ses = boto3.client('ses', region_name=REGION)
+ses = boto3.client('sesv2', region_name=REGION)
 
 CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*',
@@ -162,11 +160,13 @@ def lambda_handler(event, context):
         table.put_item(Item=item)
         print(f"Stored application {application_id} in DynamoDB")
 
-        # Notify the admin via SES; email failure does not fail the application submission.
+        admin_notification_sent = False
         try:
-            send_recruiter_alert(
+            email_response = send_recruiter_alert(
                 ADMIN_EMAIL, item, resume_presigned_url, resume_file_bytes, download_filename
             )
+            admin_notification_sent = True
+            print(f"SES admin email sent. Message ID: {email_response.get('MessageId')}")
         except Exception as email_err:
             print(f"SES admin notification warning: {str(email_err)}")
             # Do not fail application submission if SES email fails (e.g. sandbox verification)
@@ -175,7 +175,8 @@ def lambda_handler(event, context):
             'success': True,
             'message': 'Application submitted successfully!',
             'application_id': application_id,
-            'applied_at': timestamp
+            'applied_at': timestamp,
+            'admin_notification_sent': admin_notification_sent
         })
 
     except Exception as e:
@@ -236,27 +237,34 @@ def send_recruiter_alert(admin_email, item, resume_url, resume_file_bytes, resum
     </html>
     """
 
-    email_message = EmailMessage(policy=SMTP)
-    email_message['Subject'] = subject
-    email_message['From'] = SENDER_EMAIL
-    email_message['To'] = admin_email
-    email_message.set_content(
-        f"New application from {item['name']} for {item['role']}. "
-        f"Application ID: {item['application_id']}. "
-        f"{'The resume PDF is attached.' if resume_file_bytes else 'No resume was attached.'}"
-    )
-    email_message.add_alternative(html_body, subtype='html')
+    content = {
+        'Simple': {
+            'Subject': {'Data': subject, 'Charset': 'UTF-8'},
+            'Body': {
+                'Text': {
+                    'Data': (
+                        f"New application from {item['name']} for {item['role']}. "
+                        f"Application ID: {item['application_id']}. "
+                        f"{'The resume PDF is attached.' if resume_file_bytes else 'No resume was attached.'}"
+                    ),
+                    'Charset': 'UTF-8',
+                },
+                'Html': {'Data': html_body, 'Charset': 'UTF-8'},
+            },
+        }
+    }
 
     if resume_file_bytes:
-        email_message.add_attachment(
-            resume_file_bytes,
-            maintype='application',
-            subtype='pdf',
-            filename=resume_filename,
-        )
+        content['Simple']['Attachments'] = [{
+            'RawContent': resume_file_bytes,
+            'FileName': resume_filename,
+            'ContentType': 'application/pdf',
+            'ContentDisposition': 'ATTACHMENT',
+            'ContentTransferEncoding': 'BASE64',
+        }]
 
-    ses.send_raw_email(
-        Source=SENDER_EMAIL,
-        Destinations=[admin_email],
-        RawMessage={'Data': email_message.as_bytes()},
+    return ses.send_email(
+        FromEmailAddress=SENDER_EMAIL,
+        Destination={'ToAddresses': [admin_email]},
+        Content=content,
     )

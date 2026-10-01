@@ -21,6 +21,7 @@ const btnSpinner = document.getElementById('btnSpinner');
 const btnText = document.getElementById('btnText');
 const successModal = document.getElementById('successModal');
 const modalMessage = document.getElementById('modalMessage');
+const modalAppId = document.getElementById('modalAppId');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 
 // Theme toggle elements
@@ -229,7 +230,10 @@ form.addEventListener('submit', async (e) => {
         throw new Error(data.error || 'Failed to submit application to AWS Lambda.');
       }
 
-      showSuccess(data.application_id || 'AWS-' + Math.random().toString(36).substring(2, 9).toUpperCase());
+      showSuccess(
+        data.application_id || 'AWS-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+        data.admin_notification_sent
+      );
     } else {
       // Mock Demo Mode for Instant Testing
       await new Promise(r => setTimeout(r, 600));
@@ -269,15 +273,32 @@ function setLoading(isLoading) {
   btnText.textContent = isLoading ? 'Processing...' : 'Submit Application';
 }
 
-function showSuccess(appId) {
-  modalMessage.textContent = `Your application was submitted successfully. Reference ID: ${appId}`;
-  successModal.style.display = 'flex';
+function showSuccess(appId, adminNotificationSent = null) {
+  let message = `Your application was submitted successfully. Reference ID: ${appId}`;
+  if (adminNotificationSent === false) {
+    message += ' The application was saved, but the hiring team email could not be sent.';
+  }
+
+  if (modalMessage) {
+    modalMessage.textContent = message;
+  } else if (modalAppId) {
+    modalAppId.textContent = appId;
+  }
+
+  if (successModal) {
+    successModal.style.display = 'flex';
+  } else {
+    showAlert(message, adminNotificationSent === false ? 'error' : 'success');
+  }
+
   form.reset();
   removeFileBtn.click();
 }
 
-modalCloseBtn.addEventListener('click', () => {
-  successModal.style.display = 'none';
-});
+if (modalCloseBtn && successModal) {
+  modalCloseBtn.addEventListener('click', () => {
+    successModal.style.display = 'none';
+  });
+}
 
 updateEndpointDisplay();
