@@ -3,6 +3,9 @@ import boto3
 import base64
 import os
 import re
+from email.message import EmailMessage
+from email.policy import SMTP
+from html import escape as html_escape
 from datetime import datetime
 import uuid
 
@@ -65,6 +68,9 @@ def lambda_handler(event, context):
         cover_letter = (body.get('cover_letter') or '').strip()
         file_base64 = body.get('file_base64')
         file_name = body.get('file_name', 'resume.pdf')
+        download_filename = re.sub(
+            r'[^A-Za-z0-9._-]', '_', os.path.basename(str(file_name or 'resume.pdf'))
+        ) or 'resume.pdf'
 
         if not name or not email or not role:
             return build_response(400, {
@@ -78,6 +84,7 @@ def lambda_handler(event, context):
         timestamp = datetime.utcnow().isoformat() + 'Z'
         resume_s3_key = None
         resume_presigned_url = None
+        resume_file_bytes = None
 
         # Process Resume PDF upload if provided
         if file_base64:
@@ -88,10 +95,10 @@ def lambda_handler(event, context):
                 else:
                     raw_base64 = file_base64
 
-                file_bytes = base64.b64decode(raw_base64)
+                resume_file_bytes = base64.b64decode(raw_base64)
 
                 # Check max size (approx 5MB limit)
-                if len(file_bytes) > 5 * 1024 * 1024:
+                if len(resume_file_bytes) > 5 * 1024 * 1024:
                     return build_response(400, {'error': 'Resume file size exceeds 5MB limit.'})
 
                 # Sanitize file extension
@@ -108,7 +115,7 @@ def lambda_handler(event, context):
                 s3.put_object(
                     Bucket=RESUME_BUCKET,
                     Key=resume_s3_key,
-                    Body=file_bytes,
+                    Body=resume_file_bytes,
                     ContentType=content_type,
                     Metadata={
                         'candidate-name': name,
@@ -121,7 +128,12 @@ def lambda_handler(event, context):
                 # Generate secure presigned URL valid for 7 days (604800 seconds) for recruiter review
                 resume_presigned_url = s3.generate_presigned_url(
                     'get_object',
-                    Params={'Bucket': RESUME_BUCKET, 'Key': resume_s3_key},
+                    Params={
+                        'Bucket': RESUME_BUCKET,
+                        'Key': resume_s3_key,
+                        'ResponseContentDisposition': f'attachment; filename="{download_filename}"',
+                        'ResponseContentType': content_type,
+                    },
                     ExpiresIn=604800
                 )
             except Exception as s3_err:
@@ -152,7 +164,9 @@ def lambda_handler(event, context):
 
         # Notify the admin via SES; email failure does not fail the application submission.
         try:
-            send_recruiter_alert(ADMIN_EMAIL, item, resume_presigned_url)
+            send_recruiter_alert(
+                ADMIN_EMAIL, item, resume_presigned_url, resume_file_bytes, download_filename
+            )
         except Exception as email_err:
             print(f"SES admin notification warning: {str(email_err)}")
             # Do not fail application submission if SES email fails (e.g. sandbox verification)
@@ -172,12 +186,13 @@ def lambda_handler(event, context):
         })
 
 
-def send_recruiter_alert(admin_email, item, resume_url):
+def send_recruiter_alert(admin_email, item, resume_url, resume_file_bytes, resume_filename):
     """Sends notification to the hiring manager with candidate info and resume download link"""
     subject = f"🎯 New Application: {item['name']} for {item['role']}"
+    safe_resume_url = html_escape(resume_url, quote=True) if resume_url else None
     resume_btn = f"""
       <p style="margin-top: 20px;">
-        <a href="{resume_url}" style="background-color: #2563eb; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+        <a href="{safe_resume_url}" style="background-color: #2563eb; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
           Download Resume PDF
         </a>
       </p>
@@ -221,11 +236,27 @@ def send_recruiter_alert(admin_email, item, resume_url):
     </html>
     """
 
-    ses.send_email(
+    email_message = EmailMessage(policy=SMTP)
+    email_message['Subject'] = subject
+    email_message['From'] = SENDER_EMAIL
+    email_message['To'] = admin_email
+    email_message.set_content(
+        f"New application from {item['name']} for {item['role']}. "
+        f"Application ID: {item['application_id']}. "
+        f"{'The resume PDF is attached.' if resume_file_bytes else 'No resume was attached.'}"
+    )
+    email_message.add_alternative(html_body, subtype='html')
+
+    if resume_file_bytes:
+        email_message.add_attachment(
+            resume_file_bytes,
+            maintype='application',
+            subtype='pdf',
+            filename=resume_filename,
+        )
+
+    ses.send_raw_email(
         Source=SENDER_EMAIL,
-        Destination={'ToAddresses': [admin_email]},
-        Message={
-            'Subject': {'Data': subject, 'Charset': 'UTF-8'},
-            'Body': {'Html': {'Data': html_body, 'Charset': 'UTF-8'}}
-        }
+        Destinations=[admin_email],
+        RawMessage={'Data': email_message.as_bytes()},
     )

@@ -175,31 +175,18 @@
     </div>
   </main>
 
-  <!-- Level 2 Floating Modal Sheet (Success) -->
+  <!-- Application success modal -->
   <div class="modal-overlay" id="successModal">
-    <div class="modal-sheet">
-      <div
-        style="font-family: var(--font-mono); font-size: 11px; color: var(--link); text-transform: uppercase; margin-bottom: 8px;">
-        201 CREATED // DISPATCHED</div>
-      <h3 style="font-size: 22px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; color: var(--ink);">
-        Application Submitted</h3>
-      <p style="color: var(--body); font-size: 14px; margin-bottom: 20px; line-height: 22px;">
-        Your candidate profile and resume have been indexed in DynamoDB and stored in private S3 storage. The hiring
-        team has been notified.
-      </p>
-
-      <div
-        style="background-color: var(--canvas); border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 24px; text-align: left;">
-        <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--mute);">
-          Tracking Reference ID</div>
-        <div id="modalAppId"
-          style="font-family: var(--font-mono); font-size: 13px; color: var(--ink); margin-top: 4px; word-break: break-all;">
-          -</div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
       </div>
-
-      <div style="display: flex; gap: 12px; justify-content: center;">
-        <button type="button" class="btn-sm-primary" id="modalCloseBtn">Submit Another Application</button>
-      </div>
+      <h3 class="modal-title" id="modalTitle">Thank You</h3>
+      <p class="modal-message" id="modalMessage">Your application was submitted successfully.</p>
+      <button type="button" class="modal-btn" id="modalCloseBtn">Continue</button>
     </div>
   </div>
 

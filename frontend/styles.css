@@ -598,16 +598,69 @@ textarea.text-input {
   padding: var(--space-md);
 }
 
-.modal-sheet {
+.modal-card {
   background-color: var(--canvas-elevated);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-md);
-  max-width: 500px;
+  max-width: 400px;
   width: 100%;
   padding: var(--space-xl);
   box-shadow: var(--shadow-floating);
   animation: geistFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
+}
+
+.modal-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto var(--space-md);
+  border-radius: 50%;
+  color: #15803d;
+  background-color: rgba(21, 128, 61, 0.12);
+}
+
+[data-theme="dark"] .modal-icon {
+  color: #4ade80;
+  background-color: rgba(74, 222, 128, 0.14);
+}
+
+.modal-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.modal-title {
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+  margin-bottom: var(--space-xs);
+}
+
+.modal-message {
+  color: var(--body);
+  font-size: 14px;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+  margin-bottom: var(--space-lg);
+}
+
+.modal-btn {
+  min-height: 40px;
+  padding: 0 var(--space-lg);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font: 500 14px/20px var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.modal-btn:hover {
+  opacity: 0.88;
 }
 
 @keyframes geistFadeIn {

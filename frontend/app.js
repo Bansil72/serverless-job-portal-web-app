@@ -20,7 +20,7 @@ const submitBtn = document.getElementById('submitBtn');
 const btnSpinner = document.getElementById('btnSpinner');
 const btnText = document.getElementById('btnText');
 const successModal = document.getElementById('successModal');
-const modalAppId = document.getElementById('modalAppId');
+const modalMessage = document.getElementById('modalMessage');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 
 // Theme toggle elements
@@ -270,7 +270,7 @@ function setLoading(isLoading) {
 }
 
 function showSuccess(appId) {
-  modalAppId.textContent = appId;
+  modalMessage.textContent = `Your application was submitted successfully. Reference ID: ${appId}`;
   successModal.style.display = 'flex';
   form.reset();
   removeFileBtn.click();
